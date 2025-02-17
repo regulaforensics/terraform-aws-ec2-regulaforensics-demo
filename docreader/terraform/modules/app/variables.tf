@@ -26,6 +26,30 @@ variable "domain" {
   type        = string
 }
 
+variable "db_instance_class" {
+  description = "DB Instance Class to deploy"
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "db_name" {
+  description = "RDS name to deploy"
+  type        = string
+  default     = "docreader"
+}
+
+variable "db_username" {
+  description = "DB Instance username to deploy"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "DB Instance password to deploy"
+  type        = string
+  sensitive   = true
+}
+
 variable "asg_min_size" {
   description = "ASG Minimum size of the Auto Scaling Group"
   default     = 1
@@ -66,16 +90,4 @@ variable "worker_count" {
   description = "Docreader workers count"
   default     = 1
   type        = number
-}
-
-variable "backlog" {
-  description = "Docreader backlog size"
-  default     = 20
-  type        = number
-}
-
-variable "create_schedule" {
-  description = "Determines whether to create autoscaling group schedule or not"
-  type        = bool
-  default     = true
 }

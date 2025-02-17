@@ -6,11 +6,12 @@ data "aws_acm_certificate" "certificate" {
 
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = "~> 9.1"
+  version = "~> 9.7"
 
   name = "${local.name}-${local.environment}-alb"
 
-  load_balancer_type = "application"
+  load_balancer_type         = "application"
+  enable_deletion_protection = false
 
   vpc_id                     = module.vpc.vpc_id
   subnets                    = module.vpc.public_subnets

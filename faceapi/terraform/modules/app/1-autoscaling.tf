@@ -1,3 +1,47 @@
+## S3 bucket access policy
+data "aws_iam_policy_document" "s3_policy" {
+  statement {
+    sid       = "S3${local.name}${local.environment}0"
+    actions   = ["s3:ListAllMyBuckets"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "S3${local.name}${local.environment}1"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+    resources = [
+      "${module.s3_liveness_bucket.s3_bucket_arn}",
+      "${module.s3_detect_match_bucket.s3_bucket_arn}"
+    ]
+  }
+
+  statement {
+    sid = "S3${local.name}${local.environment}2"
+    actions = [
+      "s3:PutObject",
+      "s3:PutObjectAcl",
+      "s3:GetObject",
+      "s3:GetObjectAcl",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "${module.s3_liveness_bucket.s3_bucket_arn}/*",
+      "${module.s3_detect_match_bucket.s3_bucket_arn}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "s3_policy" {
+  name   = "${local.name}${local.environment}s3"
+  path   = "/"
+  policy = data.aws_iam_policy_document.s3_policy.json
+
+  tags = local.tags
+}
+
 resource "aws_iam_service_linked_role" "autoscaling" {
   aws_service_name = "autoscaling.amazonaws.com"
   description      = "A service linked role for autoscaling"
@@ -23,14 +67,20 @@ data "template_file" "startup" {
   template = file("${path.module}/user-data/startup.tpl")
 
   vars = {
-    worker_count = var.worker_count
-    backlog      = var.backlog
+    AWS_REGION                  = var.region
+    WORKER_COUNT                = var.worker_count
+    DB_USERNAME                 = var.db_username
+    DB_PASSD                    = var.db_password
+    DB_HOST                     = module.rds.db_instance_address
+    DB_NAME                     = var.db_name
+    S3_BUCKET_DETECT_MATCH_NAME = module.s3_detect_match_bucket.s3_bucket_id
+    S3_BUCKET_LIVENESS_NAME     = module.s3_liveness_bucket.s3_bucket_id
   }
 }
 
 module "asg" {
   source  = "terraform-aws-modules/autoscaling/aws"
-  version = "~> 7.1"
+  version = "~> 7.4"
 
   # Autoscaling group
   name = "${local.name}-${local.environment}"
@@ -96,6 +146,7 @@ module "asg" {
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     CloudWatchAgentServerPolicy  = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy",
+    S3BucketAccess               = aws_iam_policy.s3_policy.arn
   }
 
   metadata_options = {
@@ -121,18 +172,6 @@ module "asg" {
     }
   }
 
-  create_schedule = var.create_schedule
-
-  schedules = {
-    up = {
-      min_size         = var.asg_min_size
-      max_size         = var.asg_max_size
-      desired_capacity = var.asg_max_size
-      recurrence       = "45 9 * * 1-5"
-      time_zone        = "Etc/UTC"
-    }
-  }
-
   # Mixed instances
   use_mixed_instances_policy = true
   mixed_instances_policy = {
@@ -150,7 +189,7 @@ module "asg" {
 
 module "security_group_face_ec2" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 4.0"
+  version = "~> 5.1"
 
   name        = "${local.name}-${local.environment}-ec2"
   description = "EC2 security group"
@@ -158,9 +197,10 @@ module "security_group_face_ec2" {
 
   # Ingress
   ingress_with_cidr_blocks = [
+    for key, value in module.vpc.private_subnets_cidr_blocks :
     {
       rule        = "ssh-tcp"
-      cidr_blocks = "0.0.0.0/0"
+      cidr_blocks = value
     }
   ]
 

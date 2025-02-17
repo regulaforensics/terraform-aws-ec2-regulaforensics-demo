@@ -97,6 +97,11 @@ build {
   }
 
   provisioner "file" {
+    source      = "artifacts/config.yaml"
+    destination = "/tmp/config.yaml"
+  }
+
+  provisioner "file" {
     source      = "artifacts/docker-compose.yml"
     destination = "/tmp/docker-compose.yml"
   }

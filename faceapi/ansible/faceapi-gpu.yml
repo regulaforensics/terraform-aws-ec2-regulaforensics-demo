@@ -41,6 +41,7 @@
         - { src: "/tmp/nginx/", dest: "/home/ubuntu/nginx/" }
         - { src: "/tmp/regula.license", dest: "/home/ubuntu/regula.license" }
         - { src: "/tmp/docker-compose.yml", dest: "/home/ubuntu/docker-compose.yml" }
+        - { src: "/tmp/config.yaml", dest: "/home/ubuntu/config.yaml" }
 
     - name: Create env for docker-compose
       ansible.builtin.copy:

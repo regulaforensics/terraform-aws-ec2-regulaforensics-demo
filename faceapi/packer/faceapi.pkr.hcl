@@ -105,6 +105,11 @@ build {
     destination = "/tmp/docker-compose.yml"
   }
 
+  provisioner "file" {
+    source      = "artifacts/config.yaml"
+    destination = "/tmp/config.yaml"
+  }
+
   provisioner "ansible-local" {
     extra_arguments   = ["--extra-vars \"target=127.0.0.1 faceapi_tag=${var.faceapi_tag} faceapi_engine=${var.faceapi_engine}\""]
     playbook_dir      = "../ansible"

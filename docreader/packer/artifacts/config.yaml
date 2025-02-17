@@ -1,0 +1,39 @@
+service:
+  webServer:
+    port: 8080
+    workers: WORKER_COUNT
+    timeout: 120
+
+    demoApp:
+      enabled: false
+
+    cors:
+      origins: "*"
+      headers: "*"
+      methods: "GET,POST,OPTIONS"
+
+    metrics:
+      enabled: true
+
+  processing:
+    enabled: true
+    results:
+      location:
+        bucket: S3_BUCKET_RESULTS_NAME
+        prefix: "results"
+
+  sessionApi:
+    enabled: true
+    transactions:
+      location:
+        bucket: S3_BUCKET_SESSION_NAME
+        prefix: "transactions"
+
+  database:
+    connectionString: postgresql://DB_USERNAME:DB_PASSD@DB_HOST/DB_NAME
+
+  storage:
+    type: s3
+
+    s3:
+      region: AWS_REGION

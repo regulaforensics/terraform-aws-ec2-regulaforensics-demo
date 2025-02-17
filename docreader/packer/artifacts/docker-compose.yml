@@ -5,15 +5,10 @@ services:
   docreader:
     image: regulaforensics/docreader:${docreader_tag}
     container_name: docreader
-    environment:
-      DOCREADER_ENABLE_DEMO_WEB_APP: "false"
-      DOCREADER_WORKERS: ${worker_count}
-      DOCREADER_BACKLOG: ${backlog}
-      DOCREADER_TIMEOUT: "60"
-      DOCREADER_CORS_ORIGINS: "*"
     volumes:
-      - docreader_site:/app/view/static
-      - /home/ubuntu/regula.license:/app/extBin/unix_x64/regula.license
+      - docreader_site:/app/view
+      - /home/ubuntu/regula.license:/app/extBin/unix/regula.license
+      - /home/ubuntu/config.yaml:/app/config.yaml
     networks:
       - docreader-network
     restart: always
@@ -26,6 +21,8 @@ services:
       - /home/ubuntu/nginx/docreader.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
+    depends_on:
+      - docreader
     networks:
       - docreader-network
     restart: always

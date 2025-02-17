@@ -11,15 +11,11 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    environment:
-      FACEAPI_ENABLE_DEMO_WEB_APP: "false"
-      FACEAPI_WORKERS: ${worker_count}
-      FACEAPI_BACKLOG: ${backlog}
-      FACEAPI_TIMEOUT: "60"
-      FACEAPI_CORS_ORIGINS: "*"
     volumes:
-      - /home/ubuntu/regula.license:/app/extBin/unix_x64/${faceapi_engine}/regula.license
-      - faceapi_site:/app/view/static
+      - faceapi_site:/app/view
+      - /home/ubuntu/regula.license:/app/extBin/unix/regula.license
+      - /home/ubuntu/config.yaml:/app/config.yaml
+      
     networks:
       - faceapi-network
     restart: always
@@ -28,8 +24,8 @@ services:
     image: nginx:${nginx_tag}
     container_name: nginx
     volumes:
-      - /home/ubuntu/nginx/faceapi.conf:/etc/nginx/conf.d/default.conf
       - faceapi_site:/var/www/faceapi
+      - /home/ubuntu/nginx/faceapi.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
     networks:

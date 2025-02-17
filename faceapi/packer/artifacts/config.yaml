@@ -1,0 +1,35 @@
+service:
+  webServer:
+    port: 41101
+    timeout: 60
+    workers: 1
+
+    demoApp:
+      enabled: false
+
+    metrics:
+      enabled: true
+
+    cors:
+      origins: "*"
+
+  storage:
+    type: "s3"
+    s3:
+      region: AWS_REGION
+
+  database:
+    connectionString: postgresql://DB_USERNAME:DB_PASSD@DB_HOST/DB_NAME
+
+  detectMatch:
+    enabled: true
+    results:
+      location:
+        bucket: S3_BUCKET_DETECT_MATCH_NAME
+        prefix: "results"
+
+  liveness:
+    enabled: true
+    sessions:
+      location:
+        bucket: S3_BUCKET_LIVENESS_NAME

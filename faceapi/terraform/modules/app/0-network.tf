@@ -1,6 +1,6 @@
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.1"
+  version = "~> 5.5"
 
   name = "${local.name}-${local.environment}-vpc"
   cidr = "${var.vpc_network}.0.0/16"
@@ -24,8 +24,6 @@ module "vpc" {
   create_database_subnet_route_table     = true
   create_database_internet_gateway_route = true
 
-  tags = local.tags
-
   private_subnet_tags = {
     Name = "${local.name}-${local.environment}-private",
     Role = "private"
@@ -40,4 +38,7 @@ module "vpc" {
     Name = "${local.name}-${local.environment}-database",
     Role = "database"
   }
+
+  tags = local.tags
+
 }
